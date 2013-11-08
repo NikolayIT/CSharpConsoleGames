@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>2f1bffa3-2fce-4244-80d4-c3f123be2f18</ProjectGuid>
+    <ProjectGuid>{335C946F-00E6-4888-A009-827E6B0AAD20}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PingPong</RootNamespace>

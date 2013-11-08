@@ -3,7 +3,37 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Snake", "Snake\Snake.csproj", "{3AFB18FB-ECDC-40FE-B10E-3B34C2B8D610}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cars", "Cars\Cars.csproj", "{45BB87DC-35A8-4CAC-AECD-EB35F4F971FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingPong", "PingPong\PingPong.csproj", "{335C946F-00E6-4888-A009-827E6B0AAD20}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tetris", "Tetris\Tetris.csproj", "{81E6789B-8913-4EDC-9301-F9262E1FCB4B}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3AFB18FB-ECDC-40FE-B10E-3B34C2B8D610}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AFB18FB-ECDC-40FE-B10E-3B34C2B8D610}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AFB18FB-ECDC-40FE-B10E-3B34C2B8D610}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AFB18FB-ECDC-40FE-B10E-3B34C2B8D610}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45BB87DC-35A8-4CAC-AECD-EB35F4F971FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45BB87DC-35A8-4CAC-AECD-EB35F4F971FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45BB87DC-35A8-4CAC-AECD-EB35F4F971FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45BB87DC-35A8-4CAC-AECD-EB35F4F971FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{335C946F-00E6-4888-A009-827E6B0AAD20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{335C946F-00E6-4888-A009-827E6B0AAD20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{335C946F-00E6-4888-A009-827E6B0AAD20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{335C946F-00E6-4888-A009-827E6B0AAD20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81E6789B-8913-4EDC-9301-F9262E1FCB4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81E6789B-8913-4EDC-9301-F9262E1FCB4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81E6789B-8913-4EDC-9301-F9262E1FCB4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81E6789B-8913-4EDC-9301-F9262E1FCB4B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
