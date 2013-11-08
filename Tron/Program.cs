@@ -32,6 +32,8 @@ class Program
     static void Main(string[] args)
     {
         SetGameField();
+        StartupScreen();
+
         isUsed = new bool[Console.WindowWidth, Console.WindowHeight];
 
 
@@ -94,6 +96,39 @@ class Program
     }
 
 
+    static void StartupScreen()
+    {
+        string heading = "A simple tron-like game";
+        Console.CursorLeft = Console.BufferWidth / 2 - heading.Length / 2;
+        Console.WriteLine(heading);
+
+
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("Player 1's controls:\n");
+        Console.WriteLine("W - Up");
+        Console.WriteLine("A - Left");
+        Console.WriteLine("S - Down");
+        Console.WriteLine("D - Right");
+
+        string longestString = "Player 2's controls:";
+        int cursorLeft = Console.BufferWidth - longestString.Length;
+
+        Console.CursorTop = 1;
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.CursorLeft = cursorLeft;
+        Console.WriteLine("Player 2's controls:");
+        Console.CursorLeft = cursorLeft;
+        Console.WriteLine("Up Arrow - Up");
+        Console.CursorLeft = cursorLeft;
+        Console.WriteLine("Left Arrow - Left");
+        Console.CursorLeft = cursorLeft;
+        Console.WriteLine("Down Arrow - Down");
+        Console.CursorLeft = cursorLeft;
+        Console.WriteLine("Right Arrow - Right");
+
+        Console.ReadKey();
+        Console.Clear();
+    }
     static void ResetGame()
     {
         isUsed = new bool[Console.WindowWidth, Console.WindowHeight];
