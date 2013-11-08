@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+
 class Program
 {
     static int left = 0;
@@ -12,22 +13,27 @@ class Program
     static int up = 2;
     static int down = 3;
 
+
     static int firstPlayerScore = 0;
     static int firstPlayerDirection = right;
     static int firstPlayerColumn = 0; // column
     static int firstPlayerRow = 0; // row
+
 
     static int secondPlayerScore = 0;
     static int secondPlayerDirection = left;
     static int secondPlayerColumn = 40; // column
     static int secondPlayerRow = 5; // row
 
+
     static bool[,] isUsed;
+
 
     static void Main(string[] args)
     {
         SetGameField();
         isUsed = new bool[Console.WindowWidth, Console.WindowHeight];
+
 
         while (true)
         {
@@ -37,10 +43,13 @@ class Program
                 ChangePlayerDirection(key);
             }
 
+
             MovePlayers();
+
 
             bool firstPlayerLoses = DoesPlayerLose(firstPlayerRow, firstPlayerColumn);
             bool secondPlayerLoses = DoesPlayerLose(secondPlayerRow, secondPlayerColumn);
+
 
             if (firstPlayerLoses && secondPlayerLoses)
             {
@@ -71,15 +80,19 @@ class Program
                 ResetGame();
             }
 
+
             isUsed[firstPlayerColumn, firstPlayerRow] = true;
             isUsed[secondPlayerColumn, secondPlayerRow] = true;
+
 
             WriteOnPosition(firstPlayerColumn, firstPlayerRow, '*', ConsoleColor.Yellow);
             WriteOnPosition(secondPlayerColumn, secondPlayerRow, '*', ConsoleColor.Cyan);
 
+
             Thread.Sleep(100);
         }
     }
+
 
     static void ResetGame()
     {
@@ -92,6 +105,7 @@ class Program
         Console.Clear();
         MovePlayers();
     }
+
 
     static bool DoesPlayerLose(int row, int col)
     {
@@ -112,21 +126,26 @@ class Program
             return true;
         }
 
+
         if (isUsed[col, row])
         {
             return true;
         }
 
+
         return false;
     }
+
 
     static void SetGameField()
     {
         Console.WindowHeight = 30;
         Console.BufferHeight = 30;
 
+
         Console.WindowWidth = 100;
         Console.BufferWidth = 100;
+
 
         /*
          * 
@@ -136,9 +155,11 @@ class Program
         firstPlayerColumn = 0;
         firstPlayerRow = Console.WindowHeight / 2;
 
+
         secondPlayerColumn = Console.WindowWidth - 1;
         secondPlayerRow = Console.WindowHeight / 2;
     }
+
 
     static void MovePlayers()
     {
@@ -159,6 +180,7 @@ class Program
             firstPlayerRow++;
         }
 
+
         if (secondPlayerDirection == right)
         {
             secondPlayerColumn++;
@@ -177,6 +199,7 @@ class Program
         }
     }
 
+
     static void WriteOnPosition(int x, int y, char ch, ConsoleColor color)
     {
         Console.ForegroundColor = color;
@@ -184,43 +207,46 @@ class Program
         Console.Write(ch);
     }
 
+
     static void ChangePlayerDirection(ConsoleKeyInfo key)
     {
-        if (key.Key == ConsoleKey.W)
+        if (key.Key == ConsoleKey.W && firstPlayerDirection != down)
         {
             firstPlayerDirection = up;
         }
-        if (key.Key == ConsoleKey.A)
+        if (key.Key == ConsoleKey.A && firstPlayerDirection != right)
         {
             firstPlayerDirection = left;
         }
-        if (key.Key == ConsoleKey.D)
+        if (key.Key == ConsoleKey.D && firstPlayerDirection != left)
         {
             firstPlayerDirection = right;
         }
-        if (key.Key == ConsoleKey.S)
+        if (key.Key == ConsoleKey.S && firstPlayerDirection != up)
         {
             firstPlayerDirection = down;
         }
 
-        if (key.Key == ConsoleKey.UpArrow)
+
+        if (key.Key == ConsoleKey.UpArrow && secondPlayerDirection != down)
         {
             secondPlayerDirection = up;
         }
-        if (key.Key == ConsoleKey.LeftArrow)
+        if (key.Key == ConsoleKey.LeftArrow && secondPlayerDirection != right)
         {
             secondPlayerDirection = left;
         }
-        if (key.Key == ConsoleKey.RightArrow)
+        if (key.Key == ConsoleKey.RightArrow && secondPlayerDirection != left)
         {
             secondPlayerDirection = right;
         }
-        if (key.Key == ConsoleKey.DownArrow)
+        if (key.Key == ConsoleKey.DownArrow && secondPlayerDirection != up)
         {
             secondPlayerDirection = down;
         }
     }
 }
+
 /*
 ******
      ***************
