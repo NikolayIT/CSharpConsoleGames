@@ -7,4 +7,4 @@ Source code of four C# console games with video explanation in Bulgarian
 * PingPong: http://www.youtube.com/watch?v=DmkqnjsNKZM
 * Snake: http://www.youtube.com/watch?v=dXng0W0R_Ks
 * Tron: http://www.youtube.com/watch?v=yccxWRsQBB0
-* Tetris: 
+* Tetris: https://www.youtube.com/watch?v=0-WOuN0qqI0
