@@ -11,7 +11,7 @@ namespace Tetris
         // Settings
         static int TetrisRows = 20;
         static int TetrisCols = 10;
-        static int InfoCols = 10;
+        static int InfoCols = 20;
         static int ConsoleRows = 1 + TetrisRows + 1;
         static int ConsoleCols = 1 + TetrisCols + 1 + InfoCols + 1;
         static List<bool[,]> TetrisFigures = new List<bool[,]>()
@@ -25,6 +25,12 @@ namespace Tetris
                     { true, true },
                     { true, true }
                 },
+                /*new bool[,] // big O
+                {
+                    { true, true, true },
+                    { true, true, true },
+                    { true, true, true },
+                },*/
                 new bool[,] // T
                 {
                     { false, true, false },
@@ -51,47 +57,32 @@ namespace Tetris
                     { true, true, true }
                 },
             };
-        static string ScoresFileName = "scores.txt";
         static int[] ScorePerLines = { 0, 40, 100, 300, 1200 };
 
         // State
-        static int HighScore = 0;
-        static int Score = 0;
-        static int Frame = 0;
-        static int Level = 1;
-        static int FramesToMoveFigure = 16;
-        static bool[,] CurrentFigure = null;
-        static int CurrentFigureRow = 0;
-        static int CurrentFigureCol = 0;
-        static bool[,] TetrisField = new bool[TetrisRows, TetrisCols];
+        static TetrisGameState State = new TetrisGameState(TetrisRows, TetrisCols);
         static Random Random = new Random();
 
         static void Main(string[] args)
         {
-            new Thread(PlayMusic).Start();
+            var musicPlayer = new MusicPlayer();
+            musicPlayer.Play();
 
-            if (File.Exists(ScoresFileName))
-            {
-                var allScores = File.ReadAllLines(ScoresFileName);
-                foreach (var score in allScores)
-                {
-                    var match = Regex.Match(score, @" => (?<score>[0-9]+)");
-                    HighScore = Math.Max(HighScore, int.Parse(match.Groups["score"].Value));
-                }
-            }
+            var scoreManager = new ScoreManager("scores.txt");
+            State.HighScore = scoreManager.GetHighScore();
 
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.ForegroundColor = ConsoleColor.Black;
             Console.Title = "Tetris v1.0";
             Console.CursorVisible = false;
             Console.WindowHeight = ConsoleRows + 1;
             Console.WindowWidth = ConsoleCols;
             Console.BufferHeight = ConsoleRows + 1;
             Console.BufferWidth = ConsoleCols;
-            CurrentFigure = TetrisFigures[Random.Next(0, TetrisFigures.Count)];
+            State.CurrentFigure = TetrisFigures[Random.Next(0, TetrisFigures.Count)];
             while (true)
             {
-                Frame++;
-                UpdateLevel();
+                State.Frame++;
+                State.UpdateLevel();
                 // Read user input
                 if (Console.KeyAvailable)
                 {
@@ -103,23 +94,23 @@ namespace Tetris
                     }
                     if (key.Key == ConsoleKey.LeftArrow || key.Key == ConsoleKey.A)
                     {
-                        if (CurrentFigureCol >= 1)
+                        if (State.CurrentFigureCol >= 1)
                         {
-                            CurrentFigureCol--;
+                            State.CurrentFigureCol--;
                         }
                     }
                     if (key.Key == ConsoleKey.RightArrow || key.Key == ConsoleKey.D)
                     {
-                        if (CurrentFigureCol < TetrisCols - CurrentFigure.GetLength(1))
+                        if (State.CurrentFigureCol < TetrisCols - State.CurrentFigure.GetLength(1))
                         {
-                            CurrentFigureCol++;
+                            State.CurrentFigureCol++;
                         }
                     }
                     if (key.Key == ConsoleKey.DownArrow || key.Key == ConsoleKey.S)
                     {
-                        Frame = 1;
-                        Score += Level;
-                        CurrentFigureRow++;
+                        State.Frame = 1;
+                        State.Score += State.Level;
+                        State.CurrentFigureRow++;
                     }
                     if (key.Key == ConsoleKey.Spacebar || key.Key == ConsoleKey.UpArrow || key.Key == ConsoleKey.W)
                     {
@@ -128,27 +119,24 @@ namespace Tetris
                 }
 
                 // Update the game state
-                if (Frame % (FramesToMoveFigure - Level) == 0)
+                if (State.Frame % (State.FramesToMoveFigure - State.Level) == 0)
                 {
-                    CurrentFigureRow++;
-                    Frame = 0;
+                    State.CurrentFigureRow++;
+                    State.Frame = 0;
                 }
 
-                if (Collision(CurrentFigure))
+                if (Collision(State.CurrentFigure))
                 {
                     AddCurrentFigureToTetrisField();
                     int lines = CheckForFullLines();
-                    Score += ScorePerLines[lines] * Level;
-                    CurrentFigure = TetrisFigures[Random.Next(0, TetrisFigures.Count)];
-                    CurrentFigureRow = 0;
-                    CurrentFigureCol = 0;
-                    if (Collision(CurrentFigure))
+                    State.Score += ScorePerLines[lines] * State.Level;
+                    State.CurrentFigure = TetrisFigures[Random.Next(0, TetrisFigures.Count)];
+                    State.CurrentFigureRow = 0;
+                    State.CurrentFigureCol = 0;
+                    if (Collision(State.CurrentFigure)) // game is over
                     {
-                        File.AppendAllLines(ScoresFileName, new List<string>
-                        {
-                            $"[{DateTime.Now.ToString()}] {Environment.UserName} => {Score}"
-                        });
-                        var scoreAsString = Score.ToString();
+                        scoreManager.Add(State.Score);
+                        var scoreAsString = State.Score.ToString();
                         scoreAsString += new string(' ', 7 - scoreAsString.Length);
                         Write("╔═════════╗", 5, 5);
                         Write("║ Game    ║", 6, 5);
@@ -170,40 +158,20 @@ namespace Tetris
             }
         }
 
-        private static void UpdateLevel()
-        {
-            if (Score <= 0)
-            {
-                Level = 1;
-                return;
-            }
-
-            Level = (int)Math.Log10(Score) - 1;
-            if (Level < 1)
-            {
-                Level = 1;
-            }
-
-            if (Level > 10)
-            {
-                Level = 10;
-            }
-        }
-
         private static void RotateCurrentFigure()
         {
-            var newFigure = new bool[CurrentFigure.GetLength(1), CurrentFigure.GetLength(0)];
-            for (int row = 0; row < CurrentFigure.GetLength(0); row++)
+            var newFigure = new bool[State.CurrentFigure.GetLength(1), State.CurrentFigure.GetLength(0)];
+            for (int row = 0; row < State.CurrentFigure.GetLength(0); row++)
             {
-                for (int col = 0; col < CurrentFigure.GetLength(1); col++)
+                for (int col = 0; col < State.CurrentFigure.GetLength(1); col++)
                 {
-                    newFigure[col, CurrentFigure.GetLength(0) - row - 1] = CurrentFigure[row, col];
+                    newFigure[col, State.CurrentFigure.GetLength(0) - row - 1] = State.CurrentFigure[row, col];
                 }
             }
 
             if (!Collision(newFigure))
             {
-                CurrentFigure = newFigure;
+                State.CurrentFigure = newFigure;
             }
         }
 
@@ -211,12 +179,12 @@ namespace Tetris
         {
             int lines = 0;
 
-            for (int row = 0; row < TetrisField.GetLength(0); row++)
+            for (int row = 0; row < State.TetrisField.GetLength(0); row++)
             {
                 bool rowIsFull = true;
-                for (int col = 0; col < TetrisField.GetLength(1); col++)
+                for (int col = 0; col < State.TetrisField.GetLength(1); col++)
                 {
-                    if (TetrisField[row, col] == false)
+                    if (State.TetrisField[row, col] == false)
                     {
                         rowIsFull = false;
                         break;
@@ -227,9 +195,9 @@ namespace Tetris
                 {
                     for (int rowToMove = row; rowToMove >= 1; rowToMove--)
                     {
-                        for (int col = 0; col < TetrisField.GetLength(1); col++)
+                        for (int col = 0; col < State.TetrisField.GetLength(1); col++)
                         {
-                            TetrisField[rowToMove, col] = TetrisField[rowToMove - 1, col];
+                            State.TetrisField[rowToMove, col] = State.TetrisField[rowToMove - 1, col];
                         }
                     }
 
@@ -242,13 +210,13 @@ namespace Tetris
 
         static void AddCurrentFigureToTetrisField()
         {
-            for (int row = 0; row < CurrentFigure.GetLength(0); row++)
+            for (int row = 0; row < State.CurrentFigure.GetLength(0); row++)
             {
-                for (int col = 0; col < CurrentFigure.GetLength(1); col++)
+                for (int col = 0; col < State.CurrentFigure.GetLength(1); col++)
                 {
-                    if (CurrentFigure[row, col])
+                    if (State.CurrentFigure[row, col])
                     {
-                        TetrisField[CurrentFigureRow + row, CurrentFigureCol + col] = true;
+                        State.TetrisField[State.CurrentFigureRow + row, State.CurrentFigureCol + col] = true;
                     }
                 }
             }
@@ -256,12 +224,12 @@ namespace Tetris
 
         static bool Collision(bool[,] figure)
         {
-            if (CurrentFigureCol > TetrisCols - figure.GetLength(1))
+            if (State.CurrentFigureCol > TetrisCols - figure.GetLength(1))
             {
                 return true;
             }
 
-            if (CurrentFigureRow + figure.GetLength(0) == TetrisRows)
+            if (State.CurrentFigureRow + figure.GetLength(0) == TetrisRows)
             {
                 return true;
             }
@@ -271,7 +239,7 @@ namespace Tetris
                 for (int col = 0; col < figure.GetLength(1); col++)
                 {
                     if (figure[row, col] &&
-                        TetrisField[CurrentFigureRow + row + 1, CurrentFigureCol + col])
+                        State.TetrisField[State.CurrentFigureRow + row + 1, State.CurrentFigureCol + col])
                     {
                         return true;
                     }
@@ -317,21 +285,22 @@ namespace Tetris
 
         static void DrawInfo()
         {
-            if (Score > HighScore)
+            // TODO: Move to score?
+            if (State.Score > State.HighScore)
             {
-                HighScore = Score;
+                State.HighScore = State.Score;
             }
 
             Write("Level:", 1, 3 + TetrisCols);
-            Write(Level.ToString(), 2, 3 + TetrisCols);
+            Write(State.Level.ToString(), 2, 3 + TetrisCols);
             Write("Score:", 4, 3 + TetrisCols);
-            Write(Score.ToString(), 5, 3 + TetrisCols);
+            Write(State.Score.ToString(), 5, 3 + TetrisCols);
             Write("Best:", 7, 3 + TetrisCols);
-            Write(HighScore.ToString(), 8, 3 + TetrisCols);
+            Write(State.HighScore.ToString(), 8, 3 + TetrisCols);
             Write("Frame:", 10, 3 + TetrisCols);
-            Write(Frame.ToString() + " / " + (FramesToMoveFigure - Level).ToString(), 11, 3 + TetrisCols);
+            Write(State.Frame.ToString() + " / " + (State.FramesToMoveFigure - State.Level).ToString(), 11, 3 + TetrisCols);
             Write("Position:", 13, 3 + TetrisCols);
-            Write($"{CurrentFigureRow}, {CurrentFigureCol}", 14, 3 + TetrisCols);
+            Write($"{State.CurrentFigureRow}, {State.CurrentFigureCol}", 14, 3 + TetrisCols);
             Write("Keys:", 16, 3 + TetrisCols);
             Write($"  ^ ", 18, 3 + TetrisCols);
             Write($"<   > ", 19, 3 + TetrisCols);
@@ -340,12 +309,12 @@ namespace Tetris
 
         static void DrawTetrisField()
         {
-            for (int row = 0; row < TetrisField.GetLength(0); row++)
+            for (int row = 0; row < State.TetrisField.GetLength(0); row++)
             {
                 string line = "";
-                for (int col = 0; col < TetrisField.GetLength(1); col++)
+                for (int col = 0; col < State.TetrisField.GetLength(1); col++)
                 {
-                    if (TetrisField[row, col])
+                    if (State.TetrisField[row, col])
                     {
                         line += "*";
                     }
@@ -361,13 +330,13 @@ namespace Tetris
 
         static void DrawCurrentFigure()
         {
-            for (int row = 0; row < CurrentFigure.GetLength(0); row++)
+            for (int row = 0; row < State.CurrentFigure.GetLength(0); row++)
             {
-                for (int col = 0; col < CurrentFigure.GetLength(1); col++)
+                for (int col = 0; col < State.CurrentFigure.GetLength(1); col++)
                 {
-                    if (CurrentFigure[row, col])
+                    if (State.CurrentFigure[row, col])
                     {
-                        Write("*", row + 1 + CurrentFigureRow, 1 + CurrentFigureCol + col);
+                        Write("*", row + 1 + State.CurrentFigureRow, 1 + State.CurrentFigureCol + col);
                     }
                 }
             }
@@ -377,128 +346,6 @@ namespace Tetris
         {
             Console.SetCursorPosition(col, row);
             Console.Write(text);
-        }
-
-        private static void PlayMusic()
-        {
-            while (true)
-            {
-                const int soundLenght = 100;
-                Console.Beep(1320, soundLenght * 4);
-                Console.Beep(990, soundLenght * 2);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(1188, soundLenght * 2);
-                Console.Beep(1320, soundLenght);
-                Console.Beep(1188, soundLenght);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(990, soundLenght * 2);
-                Console.Beep(880, soundLenght * 4);
-                Console.Beep(880, soundLenght * 2);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(1320, soundLenght * 4);
-                Console.Beep(1188, soundLenght * 2);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(990, soundLenght * 6);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(1188, soundLenght * 4);
-                Console.Beep(1320, soundLenght * 4);
-                Console.Beep(1056, soundLenght * 4);
-                Console.Beep(880, soundLenght * 4);
-                Console.Beep(880, soundLenght * 4);
-                Thread.Sleep(soundLenght * 2);
-                Console.Beep(1188, soundLenght * 4);
-                Console.Beep(1408, soundLenght * 2);
-                Console.Beep(1760, soundLenght * 4);
-                Console.Beep(1584, soundLenght * 2);
-                Console.Beep(1408, soundLenght * 2);
-                Console.Beep(1320, soundLenght * 6);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(1320, soundLenght * 4);
-                Console.Beep(1188, soundLenght * 2);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(990, soundLenght * 4);
-                Console.Beep(990, soundLenght * 2);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(1188, soundLenght * 4);
-                Console.Beep(1320, soundLenght * 4);
-                Console.Beep(1056, soundLenght * 4);
-                Console.Beep(880, soundLenght * 4);
-                Console.Beep(880, soundLenght * 4);
-                Thread.Sleep(soundLenght * 4);
-                Console.Beep(1320, soundLenght * 4);
-                Console.Beep(990, soundLenght * 2);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(1188, soundLenght * 2);
-                Console.Beep(1320, soundLenght);
-                Console.Beep(1188, soundLenght);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(990, soundLenght * 2);
-                Console.Beep(880, soundLenght * 4);
-                Console.Beep(880, soundLenght * 2);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(1320, soundLenght * 4);
-                Console.Beep(1188, soundLenght * 2);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(990, soundLenght * 6);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(1188, soundLenght * 4);
-                Console.Beep(1320, soundLenght * 4);
-                Console.Beep(1056, soundLenght * 4);
-                Console.Beep(880, soundLenght * 4);
-                Console.Beep(880, soundLenght * 4);
-                Thread.Sleep(soundLenght * 2);
-                Console.Beep(1188, soundLenght * 4);
-                Console.Beep(1408, soundLenght * 2);
-                Console.Beep(1760, soundLenght * 4);
-                Console.Beep(1584, soundLenght * 2);
-                Console.Beep(1408, soundLenght * 2);
-                Console.Beep(1320, soundLenght * 6);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(1320, soundLenght * 4);
-                Console.Beep(1188, soundLenght * 2);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(990, soundLenght * 4);
-                Console.Beep(990, soundLenght * 2);
-                Console.Beep(1056, soundLenght * 2);
-                Console.Beep(1188, soundLenght * 4);
-                Console.Beep(1320, soundLenght * 4);
-                Console.Beep(1056, soundLenght * 4);
-                Console.Beep(880, soundLenght * 4);
-                Console.Beep(880, soundLenght * 4);
-                Thread.Sleep(soundLenght * 4);
-                Console.Beep(660, soundLenght * 8);
-                Console.Beep(528, soundLenght * 8);
-                Console.Beep(594, soundLenght * 8);
-                Console.Beep(495, soundLenght * 8);
-                Console.Beep(528, soundLenght * 8);
-                Console.Beep(440, soundLenght * 8);
-                Console.Beep(419, soundLenght * 8);
-                Console.Beep(495, soundLenght * 8);
-                Console.Beep(660, soundLenght * 8);
-                Console.Beep(528, soundLenght * 8);
-                Console.Beep(594, soundLenght * 8);
-                Console.Beep(495, soundLenght * 8);
-                Console.Beep(528, soundLenght * 4);
-                Console.Beep(660, soundLenght * 4);
-                Console.Beep(880, soundLenght * 8);
-                Console.Beep(838, soundLenght * 16);
-                Console.Beep(660, soundLenght * 8);
-                Console.Beep(528, soundLenght * 8);
-                Console.Beep(594, soundLenght * 8);
-                Console.Beep(495, soundLenght * 8);
-                Console.Beep(528, soundLenght * 8);
-                Console.Beep(440, soundLenght * 8);
-                Console.Beep(419, soundLenght * 8);
-                Console.Beep(495, soundLenght * 8);
-                Console.Beep(660, soundLenght * 8);
-                Console.Beep(528, soundLenght * 8);
-                Console.Beep(594, soundLenght * 8);
-                Console.Beep(495, soundLenght * 8);
-                Console.Beep(528, soundLenght * 4);
-                Console.Beep(660, soundLenght * 4);
-                Console.Beep(880, soundLenght * 8);
-                Console.Beep(838, soundLenght * 16);
-            }
         }
     }
 }
