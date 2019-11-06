@@ -66,12 +66,12 @@ namespace Tetris
         static void Main(string[] args)
         {
             var musicPlayer = new MusicPlayer();
-            musicPlayer.Play();
+            //musicPlayer.Play();
 
             var scoreManager = new ScoreManager("scores.txt");
             State.HighScore = scoreManager.GetHighScore();
 
-            Console.ForegroundColor = ConsoleColor.Black;
+            Console.ForegroundColor = ConsoleColor.White;
             Console.Title = "Tetris v1.0";
             Console.CursorVisible = false;
             Console.WindowHeight = ConsoleRows + 1;
@@ -94,14 +94,15 @@ namespace Tetris
                     }
                     if (key.Key == ConsoleKey.LeftArrow || key.Key == ConsoleKey.A)
                     {
-                        if (State.CurrentFigureCol >= 1)
+                        if (State.CurrentFigureCol >= 1 && !CheckForLeftCollision(State.CurrentFigure))
                         {
                             State.CurrentFigureCol--;
                         }
                     }
                     if (key.Key == ConsoleKey.RightArrow || key.Key == ConsoleKey.D)
                     {
-                        if (State.CurrentFigureCol < TetrisCols - State.CurrentFigure.GetLength(1))
+                        if (State.CurrentFigureCol < TetrisCols - State.CurrentFigure.GetLength(1)
+                            && !CheckForRightCollision(State.CurrentFigure))
                         {
                             State.CurrentFigureCol++;
                         }
@@ -346,6 +347,44 @@ namespace Tetris
         {
             Console.SetCursorPosition(col, row);
             Console.Write(text);
+        }
+
+        static bool CheckForLeftCollision(bool [,] figure)
+        {
+
+            for (int row = 0; row < figure.GetLength(0); row++)
+            {
+                for (int col = 0; col < figure.GetLength(1); col++)
+                {
+                    if (figure[row, col] &&
+                        State.TetrisField[State.CurrentFigureRow + row, State.CurrentFigureCol + col-1])
+                    {
+                        return true;
+                    }
+
+                }
+            }
+
+            return false;
+        }
+
+        static bool CheckForRightCollision(bool[,] figure)
+        {
+
+            for (int row = 0; row < figure.GetLength(0); row++)
+            {
+                for (int col = 0; col < figure.GetLength(1); col++)
+                {
+                    if (figure[row, col] &&
+                        State.TetrisField[State.CurrentFigureRow + row, State.CurrentFigureCol + col + 1])
+                    {
+                        return true;
+                    }
+
+                }
+            }
+
+            return false;
         }
     }
 }
