@@ -12,9 +12,31 @@ namespace Tetris
         public ScoreManager(string highScoreFile)
         {
             this.highScoreFile = highScoreFile;
+            this.HighScore = this.GetHighScore();
         }
 
-        public int GetHighScore()
+        public int Score { get; private set; }
+
+        public int HighScore { get; private set; }
+
+        public void AddToScore(int addToScore)
+        {
+            this.Score += addToScore;
+            if (this.Score > this.HighScore)
+            {
+                this.HighScore = this.Score;
+            }
+        }
+
+        public void AddToHighScore()
+        {
+            File.AppendAllLines(this.highScoreFile, new List<string>
+                        {
+                            $"[{DateTime.Now.ToString()}] {Environment.UserName} => {this.Score}"
+                        });
+        }
+
+        private int GetHighScore()
         {
             var highScore = 0;
             if (File.Exists(this.highScoreFile))
@@ -28,14 +50,6 @@ namespace Tetris
             }
 
             return highScore;
-        }
-
-        public void Add(int score)
-        {
-            File.AppendAllLines(this.highScoreFile, new List<string>
-                        {
-                            $"[{DateTime.Now.ToString()}] {Environment.UserName} => {score}"
-                        });
         }
     }
 }
