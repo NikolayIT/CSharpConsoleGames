@@ -5,7 +5,7 @@
     {
         public static void Main()
         {
-            //new MusicPlayer().Play();
+            new MusicPlayer().Play();
             int TetrisRows = 20;
             int TetrisCols = 10;
             var gameManager = new TetrisGameManager(
