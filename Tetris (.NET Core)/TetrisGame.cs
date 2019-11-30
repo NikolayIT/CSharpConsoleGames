@@ -181,5 +181,31 @@ namespace Tetris
 
             return false;
         }
+
+        public bool CanMoveToLeft()
+        {
+            return (this.CurrentFigureCol >= 1 && !CheckForCollision(-1));            
+        }
+
+        public bool CanMoveToRight()
+        {
+            return (this.CurrentFigureCol < this.TetrisColumns - this.CurrentFigure.Height)
+                && !CheckForCollision(1);
+        }
+        private bool CheckForCollision(int direction) //direction = -1 left, = 1 right
+        {
+            for (int row = 0; row < CurrentFigure.Width; row++)
+            {
+                for (int col = 0; col < CurrentFigure.Height; col++)
+                {
+                    if (CurrentFigure.Body[row, col] &&
+                        this.TetrisField[this.CurrentFigureRow + row, this.CurrentFigureCol + col + direction])
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }               
     }
 }

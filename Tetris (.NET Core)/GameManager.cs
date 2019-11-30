@@ -27,13 +27,13 @@ namespace Tetris
                 switch (input)
                 {
                     case TetrisGameInput.Left:
-                        if (this.tetrisGame.CurrentFigureCol >= 1)
+                       if (this.tetrisGame.CanMoveToLeft())
                         {
                             this.tetrisGame.CurrentFigureCol--;
                         }
                         break;
-                    case TetrisGameInput.Right:
-                        if (this.tetrisGame.CurrentFigureCol < tetrisGame.TetrisColumns - this.tetrisGame.CurrentFigure.Height)
+                    case TetrisGameInput.Right:                        
+                        if (this.tetrisGame.CanMoveToRight())
                         {
                             this.tetrisGame.CurrentFigureCol++;
                         }
