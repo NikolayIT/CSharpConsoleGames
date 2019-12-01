@@ -15,5 +15,7 @@
         bool Collision(Tetromino figure);
         void NewRandomFigure();
         void UpdateLevel(int score);
+	bool CanMoveToLeft();
+        bool CanMoveToRight();
     }
 }
