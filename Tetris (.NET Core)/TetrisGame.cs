@@ -150,7 +150,6 @@ namespace Tetris
                     lines++;
                 }
             }
-
             return lines;
         }
 
@@ -175,13 +174,10 @@ namespace Tetris
                     {
                         return true;
                     }
-
                 }
             }
-
             return false;
         }
-
  	    
         public bool CanMoveToLeft()
         {
