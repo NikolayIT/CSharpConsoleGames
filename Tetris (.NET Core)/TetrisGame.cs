@@ -182,7 +182,8 @@ namespace Tetris
             return false;
         }
 
- 	public bool CanMoveToLeft()
+ 	    
+        public bool CanMoveToLeft()
         {
             return (this.CurrentFigureCol >= 1 && !CheckForCollision(-1));            
         }

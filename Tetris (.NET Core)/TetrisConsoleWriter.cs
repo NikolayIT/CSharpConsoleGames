@@ -31,7 +31,7 @@ namespace Tetris
             Console.WindowWidth = this.consoleColumns;
             Console.BufferHeight = this.consoleRows + 1;
             Console.BufferWidth = this.consoleColumns;
-            Console.ForegroundColor = ConsoleColor.White;
+            Console.ForegroundColor = ConsoleColor.Black;
             Console.Title = "Tetris v1.0";
             Console.CursorVisible = false;
         }
