@@ -1,10 +1,13 @@
-﻿namespace Tetris
+﻿using System;
+using System.Runtime.InteropServices;
+
+namespace Tetris
 {
     // TODO: When we have collision during moving (left/right) we have unusual behaviour
     public static class Program
-    {
+    {       
         public static void Main()
-        {
+        {           
             new MusicPlayer().Play();
             int TetrisRows = 20;
             int TetrisCols = 10;
