@@ -28,8 +28,7 @@ namespace Tetris
             this.FramesToMoveFigure = 15;
 
             Console.WindowHeight = this.consoleRows + 1;
-            Console.WindowWidth = this.consoleColumns;
-            
+            Console.WindowWidth = this.consoleColumns;            
             Console.BufferHeight = this.consoleRows + 1;
             Console.BufferWidth = this.consoleColumns;
             Console.ForegroundColor = ConsoleColor.Black;

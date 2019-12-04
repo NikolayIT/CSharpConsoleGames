@@ -1,7 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
-
-namespace Tetris
+﻿namespace Tetris
 {
     // TODO: When we have collision during moving (left/right) we have unusual behaviour
     public static class Program
