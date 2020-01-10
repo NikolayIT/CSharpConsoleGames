@@ -79,6 +79,48 @@ namespace Snake
             return  new Position(x,y);
         }
 
+        static Position CreateNotColidingPosition(Queue<Position> snakeElements
+            , List<Position> obstacles)
+        {
+            Position gameObject;
+
+            do
+            {
+                gameObject = CreateRandomPosition();
+            }
+            while (snakeElements.Contains(gameObject) || obstacles.Contains(gameObject));
+
+            return gameObject;
+        }
+
+        static Direction GetDirection(Direction oldDirection)
+        {
+            Direction direction = oldDirection;
+
+            if (Console.KeyAvailable)
+            {
+                ConsoleKeyInfo userInput = Console.ReadKey();
+                if (userInput.Key == ConsoleKey.LeftArrow)
+                {
+                    if (oldDirection != Direction.Right) direction = Direction.Left;
+                }
+                if (userInput.Key == ConsoleKey.RightArrow)
+                {
+                    if (oldDirection != Direction.Left) direction = Direction.Right;
+                }
+                if (userInput.Key == ConsoleKey.UpArrow)
+                {
+                    if (oldDirection != Direction.Down) direction = Direction.Up;
+                }
+                if (userInput.Key == ConsoleKey.DownArrow)
+                {
+                    if (oldDirection != Direction.Up) direction = Direction.Down;
+                }
+            }
+
+            return direction;
+        }
+
         static void Main(string[] args)
         {
             int lastFoodTime = 0;
@@ -97,13 +139,7 @@ namespace Snake
 
             Queue<Position> snakeElements = CreateSnake();
 
-            Position food;
-
-            do
-            {
-                food = CreateRandomPosition();
-            }
-            while (snakeElements.Contains(food) || obstacles.Contains(food));
+            Position food = CreateNotColidingPosition(snakeElements, obstacles);
 
             AddGameObject(food, '@', ConsoleColor.Yellow);
 
@@ -116,26 +152,7 @@ namespace Snake
             {
                 negativePoints++;
 
-                if (Console.KeyAvailable)
-                {
-                    ConsoleKeyInfo userInput = Console.ReadKey();
-                    if (userInput.Key == ConsoleKey.LeftArrow)
-                    {
-                        if (direction != Direction.Right) direction = Direction.Left;
-                    }
-                    if (userInput.Key == ConsoleKey.RightArrow)
-                    {
-                        if (direction != Direction.Left) direction = Direction.Right;
-                    }
-                    if (userInput.Key == ConsoleKey.UpArrow)
-                    {
-                        if (direction != Direction.Down) direction = Direction.Up;
-                    }
-                    if (userInput.Key == ConsoleKey.DownArrow)
-                    {
-                        if (direction != Direction.Up) direction = Direction.Down;
-                    }
-                }
+                direction = GetDirection(direction);
 
                 Position snakeHead = snakeElements.Last();
                 Position nextDirection = directions[(int)direction];
@@ -160,32 +177,28 @@ namespace Snake
                     return;
                 }
 
-                Console.SetCursorPosition(snakeHead.y, snakeHead.x);
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.Write("*");
+                AddGameObject(snakeHead, '*', ConsoleColor.DarkGray);
 
                 snakeElements.Enqueue(snakeNewHead);
-                Console.SetCursorPosition(snakeNewHead.y, snakeNewHead.x);
-                Console.ForegroundColor = ConsoleColor.Gray;
-                if (direction == Direction.Right) Console.Write(">");
-                if (direction == Direction.Left) Console.Write("<");
-                if (direction == Direction.Up) Console.Write("^");
-                if (direction == Direction.Down) Console.Write("v");
 
+                char headSymbol = '>';
+                if (direction == Direction.Left) headSymbol = '<';
+                if (direction == Direction.Up) headSymbol = '^';
+                if (direction == Direction.Down) headSymbol = 'v';
 
+                AddGameObject(snakeNewHead, headSymbol, ConsoleColor.Gray);
+                
                 if (snakeNewHead.y == food.y && snakeNewHead.x == food.x)
                 {
                     // feeding the snake
-                    do
-                    {
-                        food = CreateRandomPosition();
-                    }
-                    while (snakeElements.Contains(food) || obstacles.Contains(food));
+                    food = CreateNotColidingPosition(snakeElements, obstacles);
+
                     lastFoodTime = Environment.TickCount;
                     AddGameObject(food, '@', ConsoleColor.Yellow);
                     sleepTime--;
 
                     Position obstacle = new Position();
+
                     do
                     {
                         obstacle = CreateRandomPosition();
@@ -193,6 +206,7 @@ namespace Snake
                     while (snakeElements.Contains(obstacle) ||
                         obstacles.Contains(obstacle) ||
                         (food.x != obstacle.x && food.y != obstacle.x));
+
                     obstacles.Add(obstacle);
 
                     AddGameObject(obstacle, '=', ConsoleColor.Cyan);
@@ -208,11 +222,7 @@ namespace Snake
                     negativePoints = negativePoints + 50;
                     AddGameObject(food, ' ');
 
-                    do
-                    {
-                        food = CreateRandomPosition();
-                    }
-                    while (snakeElements.Contains(food) || obstacles.Contains(food));
+                    food = CreateNotColidingPosition(snakeElements, obstacles);
 
                     lastFoodTime = Environment.TickCount;
                 }
