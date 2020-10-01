@@ -1,7 +1,7 @@
 C# Console Games
 ================
 
-Source code of few C# console games with video explanations **in Bulgarian**
+Source code for some C# console games with video explanation **in Bulgarian**
 
 * Cars (2012): http://www.youtube.com/watch?v=bQexyufgclY
 * PingPong (2012): http://www.youtube.com/watch?v=DmkqnjsNKZM
