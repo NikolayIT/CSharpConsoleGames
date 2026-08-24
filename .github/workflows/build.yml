@@ -1,0 +1,56 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            5.0.x
+
+      # The six games in the root solution are old-style .NET Framework projects,
+      # so they need MSBuild rather than the dotnet CLI.
+      - name: Build the .NET Framework games
+        run: |
+          nuget restore CSharpConsoleGames.sln
+          msbuild CSharpConsoleGames.sln -p:Configuration=Release -p:Platform="Any CPU" -m
+
+      - name: Build and test TicTacToe
+        run: dotnet test TicTacToe/TicTacToe.sln -c Release --logger "trx;LogFileName=test-results.trx"
+
+      - name: Build Tetris (.NET Core)
+        run: dotnet build "Tetris (.NET Core)/Tetris.sln" -c Release
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/TestResults/*.trx'
+          if-no-files-found: ignore
