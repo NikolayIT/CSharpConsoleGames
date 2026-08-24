@@ -40,8 +40,8 @@ namespace TicTacToeTests
                 .Returns((Board x, Symbol s) => new Index(1, player2CurrentCol++));
 
             var game = new TicTacToeGame(player1.Object, player2.Object);
-            var winner = game.Play();
-            Assert.AreEqual(Symbol.X, winner);
+            var result = game.Play();
+            Assert.AreEqual(Symbol.X, result.Winner);
         }
         
         // TODO: Add more tests
