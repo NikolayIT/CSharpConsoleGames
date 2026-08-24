@@ -35,11 +35,14 @@ jobs:
             5.0.x
 
       # The six games in the root solution are old-style .NET Framework projects,
-      # so they need MSBuild rather than the dotnet CLI.
+      # so they need MSBuild rather than the dotnet CLI. They target v4.5, whose
+      # targeting pack is no longer installed on the hosted runners, so the build
+      # retargets them to 4.8 (source-compatible for these console apps) instead
+      # of changing the projects.
       - name: Build the .NET Framework games
         run: |
           nuget restore CSharpConsoleGames.sln
-          msbuild CSharpConsoleGames.sln -p:Configuration=Release -p:Platform="Any CPU" -m
+          msbuild CSharpConsoleGames.sln -p:Configuration=Release -p:Platform="Any CPU" -p:TargetFrameworkVersion=v4.8 -m
 
       - name: Build and test TicTacToe
         run: dotnet test TicTacToe/TicTacToe.sln -c Release --logger "trx;LogFileName=test-results.trx"
