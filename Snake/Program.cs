@@ -7,42 +7,25 @@ using System.Threading;
 
 namespace Snake
 {
-    struct Position
-    {
-        public int row;
-        public int col;
-        public Position(int row, int col)
-        {
-            this.row = row;
-            this.col = col;
-        }
-    }
+
 
     class Program
     {
-        static void Main(string[] args)
-        {
-            byte right = 0;
-            byte left = 1;
-            byte down = 2;
-            byte up = 3;
-            int lastFoodTime = 0;
-            int foodDissapearTime = 8000;
-            int negativePoints = 0;
+        const int FOOD_DISAPPEAR_TIME = 8000;
 
-            Position[] directions = new Position[]
+        static ICollection<Position> CreatePositions()
+        {
+            return new Position[]
             {
                 new Position(0, 1), // right
-                new Position(0, -1), // left
-                new Position(1, 0), // down
-                new Position(-1, 0), // up
+                new Position(0, -1), // Left
+                new Position(1, 0), // Down
+                new Position(-1, 0), // Up
             };
-            double sleepTime = 100;
-            int direction = right;
-            Random randomNumbersGenerator = new Random();
-            Console.BufferHeight = Console.WindowHeight;
-            lastFoodTime = Environment.TickCount;
+        }
 
+        static ICollection<Position> CreateObstacles()
+        {
             List<Position> obstacles = new List<Position>()
             {
                 new Position(12, 12),
@@ -51,72 +34,136 @@ namespace Snake
                 new Position(19, 19),
                 new Position(6, 9),
             };
+
             foreach (Position obstacle in obstacles)
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.SetCursorPosition(obstacle.col, obstacle.row);
+                Console.SetCursorPosition(obstacle.y, obstacle.x);
                 Console.Write("=");
             }
 
+            return obstacles;
+        }
+
+        static Queue<Position> CreateSnake()
+        {
             Queue<Position> snakeElements = new Queue<Position>();
+
             for (int i = 0; i <= 5; i++)
             {
                 snakeElements.Enqueue(new Position(0, i));
             }
 
-            Position food;
+            return snakeElements;
+        }
+
+        static void AddGameObject(Position position, char symbol, ConsoleColor? color = null)
+        {
+            Console.SetCursorPosition(position.y, position.x);
+
+            if (color.HasValue)
+            {
+                Console.ForegroundColor = color.Value;
+            }
+
+            Console.Write(symbol);
+        }
+
+        static Position CreateRandomPosition()
+        {
+            Random randomNumbersGenerator = new Random();
+
+            var x = randomNumbersGenerator.Next(0, Console.WindowHeight);
+            var y = randomNumbersGenerator.Next(0, Console.WindowWidth);
+
+            return  new Position(x,y);
+        }
+
+        static Position CreateNotColidingPosition(Queue<Position> snakeElements
+            , List<Position> obstacles)
+        {
+            Position gameObject;
+
             do
             {
-                food = new Position(randomNumbersGenerator.Next(0, Console.WindowHeight),
-                    randomNumbersGenerator.Next(0, Console.WindowWidth));
+                gameObject = CreateRandomPosition();
             }
-            while (snakeElements.Contains(food) || obstacles.Contains(food));
-            Console.SetCursorPosition(food.col, food.row);
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write("@");
+            while (snakeElements.Contains(gameObject) || obstacles.Contains(gameObject));
+
+            return gameObject;
+        }
+
+        static Direction GetDirection(Direction oldDirection)
+        {
+            Direction direction = oldDirection;
+
+            if (Console.KeyAvailable)
+            {
+                ConsoleKeyInfo userInput = Console.ReadKey();
+                if (userInput.Key == ConsoleKey.LeftArrow)
+                {
+                    if (oldDirection != Direction.Right) direction = Direction.Left;
+                }
+                if (userInput.Key == ConsoleKey.RightArrow)
+                {
+                    if (oldDirection != Direction.Left) direction = Direction.Right;
+                }
+                if (userInput.Key == ConsoleKey.UpArrow)
+                {
+                    if (oldDirection != Direction.Down) direction = Direction.Up;
+                }
+                if (userInput.Key == ConsoleKey.DownArrow)
+                {
+                    if (oldDirection != Direction.Up) direction = Direction.Down;
+                }
+            }
+
+            return direction;
+        }
+
+        static void Main(string[] args)
+        {
+            int lastFoodTime = 0;
+            int negativePoints = 0;
+
+            Position[] directions = CreatePositions().ToArray();
+
+            double sleepTime = 100;
+            Direction direction = Direction.Right;
+            
+
+            Console.BufferHeight = Console.WindowHeight;
+            lastFoodTime = Environment.TickCount;
+
+            List<Position> obstacles = CreateObstacles().ToList();
+
+            Queue<Position> snakeElements = CreateSnake();
+
+            Position food = CreateNotColidingPosition(snakeElements, obstacles);
+
+            AddGameObject(food, '@', ConsoleColor.Yellow);
 
             foreach (Position position in snakeElements)
             {
-                Console.SetCursorPosition(position.col, position.row);
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.Write("*");
+                AddGameObject(position, '*', ConsoleColor.DarkGray);
             }
 
             while (true)
             {
                 negativePoints++;
 
-                if (Console.KeyAvailable)
-                {
-                    ConsoleKeyInfo userInput = Console.ReadKey();
-                    if (userInput.Key == ConsoleKey.LeftArrow)
-                    {
-                        if (direction != right) direction = left;
-                    }
-                    if (userInput.Key == ConsoleKey.RightArrow)
-                    {
-                        if (direction != left) direction = right;
-                    }
-                    if (userInput.Key == ConsoleKey.UpArrow)
-                    {
-                        if (direction != down) direction = up;
-                    }
-                    if (userInput.Key == ConsoleKey.DownArrow)
-                    {
-                        if (direction != up) direction = down;
-                    }
-                }
+                direction = GetDirection(direction);
 
                 Position snakeHead = snakeElements.Last();
-                Position nextDirection = directions[direction];
+                Position nextDirection = directions[(int)direction];
 
-                Position snakeNewHead = new Position(snakeHead.row + nextDirection.row,
-                    snakeHead.col + nextDirection.col);
+                Position snakeNewHead = new Position(snakeHead.x + nextDirection.x,
+                    snakeHead.y + nextDirection.y);
 
-                if (snakeNewHead.col < 0) snakeNewHead.col = Console.WindowWidth - 1;
-                if (snakeNewHead.row < 0) snakeNewHead.row = Console.WindowHeight - 1;
-                if (snakeNewHead.row >= Console.WindowHeight) snakeNewHead.row = 0;
-                if (snakeNewHead.col >= Console.WindowWidth) snakeNewHead.col = 0;
+                if (snakeNewHead.y < 0) snakeNewHead.y = Console.WindowWidth - 1;
+                if (snakeNewHead.x < 0) snakeNewHead.x = Console.WindowHeight - 1;
+                if (snakeNewHead.x >= Console.WindowHeight) snakeNewHead.x = 0;
+                if (snakeNewHead.y >= Console.WindowWidth) snakeNewHead.y = 0;
 
                 if (snakeElements.Contains(snakeNewHead) || obstacles.Contains(snakeNewHead))
                 {
@@ -130,73 +177,57 @@ namespace Snake
                     return;
                 }
 
-                Console.SetCursorPosition(snakeHead.col, snakeHead.row);
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.Write("*");
+                AddGameObject(snakeHead, '*', ConsoleColor.DarkGray);
 
                 snakeElements.Enqueue(snakeNewHead);
-                Console.SetCursorPosition(snakeNewHead.col, snakeNewHead.row);
-                Console.ForegroundColor = ConsoleColor.Gray;
-                if (direction == right) Console.Write(">");
-                if (direction == left) Console.Write("<");
-                if (direction == up) Console.Write("^");
-                if (direction == down) Console.Write("v");
 
+                char headSymbol = '>';
+                if (direction == Direction.Left) headSymbol = '<';
+                if (direction == Direction.Up) headSymbol = '^';
+                if (direction == Direction.Down) headSymbol = 'v';
 
-                if (snakeNewHead.col == food.col && snakeNewHead.row == food.row)
+                AddGameObject(snakeNewHead, headSymbol, ConsoleColor.Gray);
+                
+                if (snakeNewHead.y == food.y && snakeNewHead.x == food.x)
                 {
                     // feeding the snake
-                    do
-                    {
-                        food = new Position(randomNumbersGenerator.Next(0, Console.WindowHeight),
-                            randomNumbersGenerator.Next(0, Console.WindowWidth));
-                    }
-                    while (snakeElements.Contains(food) || obstacles.Contains(food));
+                    food = CreateNotColidingPosition(snakeElements, obstacles);
+
                     lastFoodTime = Environment.TickCount;
-                    Console.SetCursorPosition(food.col, food.row);
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.Write("@");
+                    AddGameObject(food, '@', ConsoleColor.Yellow);
                     sleepTime--;
 
                     Position obstacle = new Position();
+
                     do
                     {
-                        obstacle = new Position(randomNumbersGenerator.Next(0, Console.WindowHeight),
-                            randomNumbersGenerator.Next(0, Console.WindowWidth));
+                        obstacle = CreateRandomPosition();
                     }
                     while (snakeElements.Contains(obstacle) ||
                         obstacles.Contains(obstacle) ||
-                        (food.row != obstacle.row && food.col != obstacle.row));
+                        (food.x != obstacle.x && food.y != obstacle.x));
+
                     obstacles.Add(obstacle);
-                    Console.SetCursorPosition(obstacle.col, obstacle.row);
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.Write("=");
+
+                    AddGameObject(obstacle, '=', ConsoleColor.Cyan);
                 }
                 else
                 {
                     // moving...
-                    Position last = snakeElements.Dequeue();
-                    Console.SetCursorPosition(last.col, last.row);
-                    Console.Write(" ");
+                    AddGameObject(snakeElements.Dequeue(), ' ');
                 }
 
-                if (Environment.TickCount - lastFoodTime >= foodDissapearTime)
+                if (Environment.TickCount - lastFoodTime >= FOOD_DISAPPEAR_TIME)
                 {
                     negativePoints = negativePoints + 50;
-                    Console.SetCursorPosition(food.col, food.row);
-                    Console.Write(" ");
-                    do
-                    {
-                        food = new Position(randomNumbersGenerator.Next(0, Console.WindowHeight),
-                            randomNumbersGenerator.Next(0, Console.WindowWidth));
-                    }
-                    while (snakeElements.Contains(food) || obstacles.Contains(food));
+                    AddGameObject(food, ' ');
+
+                    food = CreateNotColidingPosition(snakeElements, obstacles);
+
                     lastFoodTime = Environment.TickCount;
                 }
 
-                Console.SetCursorPosition(food.col, food.row);
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Write("@");
+                AddGameObject(food, '@', ConsoleColor.Yellow);
 
                 sleepTime -= 0.01;
 
